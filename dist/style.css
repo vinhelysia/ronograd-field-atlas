@@ -8,3 +8,6 @@
 .loot-item strong.qualitative{font:500 11px/1.5 var(--sans)}
 @media(max-width:600px){.layers{top:auto;bottom:37px;left:auto;right:12px;font-size:9px}.legend{bottom:67px}.zoom-controls{bottom:108px}}
 @media(max-width:600px){#sidebar{scroll-margin-top:60px}}
+.reference-note{border-left:2px solid #7a9384;padding:0 0 0 10px;margin:17px 0;font-size:10px}.reference-note strong{font-weight:500;color:#c4d1bf}.reference-note p{font-size:10px;margin-top:4px}.reference-diagram{margin:20px 0}.reference-diagram img{display:block;width:100%;height:auto;border:1px solid #536052}.reference-diagram figcaption{font-size:10px;color:var(--muted);margin-top:7px}.reference-diagram a{font-size:10px}.zoom-controls #native{font-size:11px;border-top:1px solid #314340}.layers{flex-wrap:wrap;max-width:80%}
+.locate{color:#f4b49c;font-size:10px;padding:6px 0 0 23px}.locate:hover{text-decoration:underline}.key-list li.located{background:#f795830d;border-left:2px solid #f79583;padding-left:8px}#map-area{scroll-margin-top:60px}
+.projection-dot{border:1px solid #f79583;border-radius:50%}.legend{flex-wrap:wrap}

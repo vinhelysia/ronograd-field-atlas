@@ -19,6 +19,12 @@ Wiki text is community-maintained and offered under [CC-BY-SA unless otherwise n
 
 ## Findings
 
+### Map accuracy update
+
+The simplified vector trace was replaced with the unchanged original-format island PNG (7,187 × 7,382 pixels). The original image is served with its native aspect ratio, and the 1:1 control displays one original pixel per CSS pixel. A SHA-256 check prevents silently replacing it with a reduced or recoloured copy. This establishes fidelity to the selected Wiki image, not to a newer in-game map or to a measured world-coordinate scale.
+
+Two original Wiki key diagrams were aligned against the island image. Kozlovka supports four projected key markers covering six descriptions plus one locked-room callout; Quarry supports two underground key projections. Image-match evidence, source links and placement uncertainty are recorded in [research-map-alignment.md](research-map-alignment.md). Floor-specific photos identify the remaining doors, but do not establish their world coordinates. No precise pins for the remaining three compounds were inferred from indoor descriptions alone.
+
 The five rooms are Kozlovka, Naval Base, Quarry, Ronograd City and Sochraina City. The current location articles list 18 possible key positions in total: 6 + 3 + 2 + 4 + 3 respectively. These describe alternative spawns, not that many simultaneous keys. Their corresponding keys are Apartment Key (the three apartment compounds), Secure Room Key (Naval) and Gate Key (Quarry). Identically named apartment keys have different destination descriptions and should not be presented as interchangeable.
 
 Possible valuables across the five rooms include Cash Bags, Equipment Cases, Metals Cases and Jerry Cans. Some rooms also have supply boxes holding ammunition, magazines and grenades; Kozlovka additionally mentions an occasional backpack. Room-specific quantities are recorded in JSON exactly as ranges or counts rather than inferred drop probabilities. The wiki lists these sale values:

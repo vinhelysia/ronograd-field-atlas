@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#10191e">
-  <meta name="description" content="A vector field atlas for BRM5 Ronograd: five locked loot rooms, eighteen reported key spawn locations, and major landmarks, with Wiki sources.">
+  <meta name="description" content="BRM5 Ronograd on the original full-resolution Wiki orthographic map, with locked-room loot, key spawn diagrams and vector markers.">
   <title>Ronograd — Field Atlas</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%2310191e'/%3E%3Cpath d='M10 30V10h12a6 6 0 0 1 0 12H10m10 0 10 8' fill='none' stroke='%23e8b972' stroke-width='4'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261102-accuracy">
 </head>
 <body>
   <header class="topbar">
@@ -26,6 +26,7 @@
         <div class="section-label"><span>LOCKED ROOMS</span><span id="result-count">5 locations</span></div>
         <div id="room-list"><p class="muted">Loading Wiki field notes…</p></div>
         <div class="field-note"><span class="note-icon">i</span><div><strong>Possible loot, not a promise.</strong><p>Counts follow the Wiki. Keys and loot may already be taken on your server.</p></div></div>
+        <div class="reference-note"><strong>Original Wiki imagery · 7,187 × 7,382 px</strong><p>Every source pixel is preserved. Use 1:1 for native detail. Eight key checks have diagram projections; the other ten have indoor directions and door photos.</p></div>
         <button id="show-guide" class="text-button">Sources & map notes <span>↗</span></button>
         <div class="checked">WIKI RESEARCH · 02 NOV 2026</div>
       </div>
@@ -33,8 +34,8 @@
       <article id="guide" hidden>
         <button class="back text-button">← All locked rooms</button>
         <div class="eyebrow">READ BEFORE DEPLOYING</div><h2>Field notes</h2>
-        <h3>Area markers</h3><p>Pins mark the compound, not a surveyed door or key coordinate. Use each room’s directions and key checklist inside the compound. Key spots have no reliable map coordinates in the Wiki.</p>
-        <h3>Reference & dates</h3><p>The vector terrain is a simplified trace of Gravity_Defier’s January 2025 orthographic Wiki map. Compound anchors were cross-checked with AGuyNamedMinh’s annotated Wiki map. The basemap may predate current game changes.</p>
+        <h3>Map and marker precision</h3><p>The terrain is the unmodified original Wiki image, with its exact aspect ratio. Compound pins are approximate area anchors. Wiki key diagrams retain their floor labels and indoor photos. A surface projection does not establish a surveyed indoor coordinate.</p>
+        <h3>Reference & dates</h3><p>The Wiki calls Gravity_Defier’s image a “16k orthographic map”; the published PNG actually contains 7,187 × 7,382 pixels. This atlas preserves that file without tracing, recolouring or downsampling. The image is dated January 2025 and may predate current game changes. The 1:1 button shows one original image pixel per CSS pixel.</p>
         <h3>Conflicting key timing</h3><p>The Locked Room overview says a spawn stays fixed until rejoining and keys respawn from midnight until the door is unlocked. The Ronograd City and Naval Base pages describe changes with the day/night cycle. No reliable respawn timer is provided here.</p>
         <h3>Fort Ronograd</h3><p>The Wiki reports an empty locked room with no obtainable room key. The Rusted Key opens the Fort’s sewer entrance; it is separate from the five loot-room keys.</p>
         <h3>Other Wiki notes</h3><p>Keys appear when a player is nearby. An unlocked door stays open. The overview says room loot requires a map reset or leaving and rejoining to refresh; this has not been tested in game.</p>
@@ -44,16 +45,16 @@
       </article>
     </aside>
     <section id="map-area" aria-label="Interactive Ronograd map">
-      <svg id="map" xmlns="http://www.w3.org/2000/svg" viewBox="-80 -90 1620 1725" tabindex="0" role="group" aria-label="Ronograd vector map. Drag to pan, scroll to zoom. Keyboard: arrows, plus, minus, Home."></svg>
+      <svg id="map" xmlns="http://www.w3.org/2000/svg" viewBox="-80 -90 1620 1725" tabindex="0" role="group" aria-label="Original Ronograd map with vector markers. Drag to pan, scroll to zoom. Keyboard: arrows, plus, minus, Home."></svg>
       <div class="map-heading"><div class="eyebrow">OPERATIONAL OVERVIEW / 01</div><h2>RONOGRAD</h2><span>RUSSIAN FEDERATION · OPEN WORLD</span></div>
-      <div class="layers" aria-label="Map layers"><label><input id="landmarks" type="checkbox" checked> Landmarks</label><label><input id="grid" type="checkbox"> Grid</label></div>
+      <div class="layers" aria-label="Map layers"><label><input id="landmarks" type="checkbox" checked> Landmarks</label><label><input id="room-pins" type="checkbox" checked> Rooms</label><label><input id="grid" type="checkbox"> Grid</label></div>
       <div class="compass" aria-label="North is up"><span>N</span><svg viewBox="0 0 36 44" aria-hidden="true"><path d="M18 3 29 38 18 29 7 38Z" fill="none" stroke="currentColor"/><path d="M18 3v26L7 38Z" fill="currentColor"/></svg></div>
-      <div class="zoom-controls"><button id="zoom-in" aria-label="Zoom in">+</button><output id="zoom-level" aria-label="Zoom level">100%</output><button id="zoom-out" aria-label="Zoom out">−</button><button id="reset" aria-label="Fit island to view" title="Fit island (Home)">⌖</button></div>
-      <div class="legend"><span><i class="room-dot"></i>Locked room area</span><span><i class="landmark-dot"></i>Landmark</span></div>
-      <div class="map-bottom"><span>VECTOR TERRAIN <b>·</b> APPROXIMATE AREA PINS</span><button id="map-notes">Map notes ↗</button></div>
-      <div id="status" role="status" aria-live="polite">Loading vector terrain…</div>
+      <div class="zoom-controls"><button id="zoom-in" aria-label="Zoom in">+</button><output id="zoom-level" aria-label="Zoom level">100%</output><button id="zoom-out" aria-label="Zoom out">−</button><button id="native" aria-label="View original pixels at one to one" title="One source pixel per CSS pixel">1:1</button><button id="reset" aria-label="Fit island to view" title="Fit island (Home)">⌖</button></div>
+      <div class="legend"><span><i class="room-dot"></i>Room area</span><span><i class="landmark-dot"></i>Landmark</span><span><i class="projection-dot"></i>Wiki projection</span></div>
+      <div class="map-bottom"><span>ORIGINAL WIKI MAP <b>·</b> 7,187 × 7,382 PX</span><button id="map-notes">Map notes ↗</button></div>
+      <div id="status" role="status" aria-live="polite">Loading original map imagery…</div>
     </section>
   </main>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="app.js?v=20261102-accuracy"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
-import {HOME, zoomView} from './map-math.js';
-import {anchors, landmarks} from './map-data.js';
+import {HOME, zoomView, nativeView} from './map-math.js?v=20261102-accuracy';
+import {anchors, landmarks, basemap, diagrams, roomPhotos} from './map-data.js?v=20261102-accuracy';
 
 const $ = selector => document.querySelector(selector);
 const map = $('#map');
@@ -11,6 +11,7 @@ const sourceLink = url => url.startsWith(wiki) ? `<a href="${escape(url)}" targe
 let rooms = [];
 let view = [...HOME];
 let ready = false;
+let basemapBlob;
 
 const mapStyle = `
   .map-grid{stroke:#a2b9ae;stroke-width:.65;opacity:.12;pointer-events:none}
@@ -19,6 +20,7 @@ const mapStyle = `
   .room-marker.selected .halo,.room-marker:hover .halo,.room-marker:focus .halo{opacity:1}
   .room-marker .pin{fill:#142228;stroke:#e8b972;stroke-width:1.7}
   .room-marker:hover .pin,.room-marker.selected .pin,.room-marker:focus .pin{fill:#80653c}
+  .room-marker.selected.has-projections{display:none}
   .room-marker .num{font:600 12px Arial,sans-serif;fill:#f3d7a5;text-anchor:middle;dominant-baseline:central}
   .room-marker .label{font:600 12px Arial,sans-serif;letter-spacing:1.4px;fill:#f1cf92;text-anchor:middle;paint-order:stroke;stroke:#132028;stroke-width:4;stroke-linejoin:round}
   .room-marker .sub{font:9px Arial,sans-serif;fill:#bec9bb;text-anchor:middle;paint-order:stroke;stroke:#132028;stroke-width:3}
@@ -27,6 +29,13 @@ const mapStyle = `
   .landmark-marker.friendly circle{fill:#adbe86;stroke:#d9dfbb}
   .landmark-marker.empty circle{stroke:#a7a38c;stroke-dasharray:2 2}
   .landmark-marker:hover circle,.landmark-marker:focus circle{stroke:#e8b972;stroke-width:2}
+  .detail-marker{cursor:pointer;outline:none}
+  .detail-marker circle{fill:#1a2025;stroke:#f79583;stroke-width:1.8}
+  .detail-marker.room circle{stroke:#ecd18a}
+  .detail-marker line{stroke:#f79583;stroke-width:.8;opacity:.7}
+  .detail-marker text{font:600 9px Arial,sans-serif;fill:#ffb6a7;paint-order:stroke;stroke:#142127;stroke-width:3;text-anchor:middle}
+  .detail-marker.room text{fill:#ecd18a}
+  .detail-marker.active circle,.detail-marker:hover circle,.detail-marker:focus circle{fill:#d95d48;stroke-width:2.5}
   @media(max-width:600px){.room-marker .sub{display:none}.room-marker .label{letter-spacing:.5px}}
 `;
 
@@ -55,6 +64,7 @@ function showPage(id) {
 }
 function clearSelection() {
   map.querySelectorAll('.selected').forEach(marker => marker.classList.remove('selected'));
+  $('#detail-layer')?.replaceChildren();
 }
 function showOverview() {
   clearSelection();
@@ -62,6 +72,29 @@ function showOverview() {
   $('#search').focus({preventScroll:true});
 }
 function showGuide() { showPage('guide'); }
+
+function focusProjection(room, index) {
+  const point=diagrams[room.id]?.points[index];
+  if(!point) return;
+  map.querySelectorAll('.detail-marker').forEach((marker,i)=>marker.classList.toggle('active',i===index));
+  $('#detail').querySelectorAll('[data-spawn]').forEach(row=>row.classList.toggle('located',point.spawns.includes(Number(row.dataset.spawn))));
+  centerOn(point.position,45);
+  $('#room-pins').checked=true;$('#room-layer').setAttribute('display','inline');
+  $('#status').textContent=`${room.name} · ${point.label} · ${point.floor} · Wiki diagram projection`;
+  if(matchMedia('(max-width:600px)').matches) $('#map-area').scrollIntoView({block:'start'});
+}
+function drawProjections(room) {
+  const layer=$('#detail-layer');
+  layer.replaceChildren();
+  for(const [index,point] of (diagrams[room.id]?.points || []).entries()) {
+    const marker=svgNode('g',{class:`detail-marker${point.spawns.length?'':' room'}`,'data-anchor':point.position,tabindex:0,role:'button','aria-label':`${room.name}: ${point.label}, ${point.floor}, Wiki diagram projection`});
+    const label=svgNode('text',{x:point.offset[0],y:point.offset[1]});label.textContent=`${point.label} · ${point.floor}`;
+    marker.append(svgNode('line',{x1:0,y1:0,x2:point.offset[0],y2:point.offset[1]}),svgNode('circle',{r:4}),label);
+    marker.addEventListener('click',()=>focusProjection(room,index));
+    marker.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();focusProjection(room,index);}});
+    layer.append(marker);
+  }
+}
 
 function roomList() {
   const query = $('#search').value.trim().toLowerCase();
@@ -86,17 +119,24 @@ function selectRoom(id, focusMap = true) {
     <h2>${escape(room.name)}</h2><span class="key-name">⚿ ${escape(room.key)}</span>
     <p>${escape(room.location)}</p>
     ${id==='quarry'?'<div class="field-note"><span class="note-icon">!</span><div><strong>Complete all compound objectives first.</strong><p>The Wiki says the Quarry key only appears after every objective is complete.</p></div></div>':''}
+    ${diagrams[id]?`<figure class="reference-diagram"><a href="${escape(diagrams[id].file)}" target="_blank" rel="noopener noreferrer"><img src="${escape(diagrams[id].file)}" alt="${escape(room.name)} key spawn reference diagram with floor labels" loading="lazy">Open full-size key diagram ↗</a><figcaption>${escape(diagrams[id].caption)} ${sourceLink(diagrams[id].source)}</figcaption></figure>`:'<div class="reference-note"><strong>Door/key coordinates not established</strong><p>No verified top-down key diagram is available here for this compound. Use the indoor directions below; the area pin is not the door.</p></div>'}
+    ${roomPhotos[id]?`<figure class="reference-diagram"><a href="${escape(roomPhotos[id].file)}" target="_blank" rel="noopener noreferrer"><img src="${escape(roomPhotos[id].file)}" alt="${escape(room.name)} locked-room door appearance from the Wiki" loading="lazy">Open original door photo ↗</a><figcaption>Door appearance reference, without a surveyed map coordinate. ${sourceLink(roomPhotos[id].source)}</figcaption></figure>`:''}
     <h3>Possible loot <span class="muted">· Wiki quantities</span></h3>
     <div class="loot-grid">${room.loot.map(loot=>`<div class="loot-item"><strong${loot.quantity.length>8?' class="qualitative"':''}>${escape(loot.quantity)}</strong><span>${escape(loot.item)}</span></div>`).join('')}</div>
     <h3>Key search checklist · ${room.keySpawns.length} spots</h3>
-    <p class="small">Possible spawns, not simultaneous keys. Pins show the compound; follow these directions inside.</p>
-    <ol class="key-list">${room.keySpawns.map((spawn,index)=>`<li><label><input type="checkbox" aria-label="Checked key spot ${index+1}"><span><b class="spawn-number">${String(index+1).padStart(2,'0')}</b>${escape(spawn)}</span></label></li>`).join('')}</ol>
+    <p class="small">Possible spawns, not simultaneous keys. “Locate” follows a Wiki diagram callout; floor labels still matter.</p>
+    <ol class="key-list">${room.keySpawns.map((spawn,index)=>{
+      const projection=diagrams[id]?.points.findIndex(point=>point.spawns.includes(index));
+      return `<li data-spawn="${index}"><label><input type="checkbox" aria-label="Checked key spot ${index+1}"><span><b class="spawn-number">${String(index+1).padStart(2,'0')}</b>${escape(spawn)}</span></label>${projection>=0?`<button class="locate" data-point="${projection}" data-room-point="${id}">Locate on map ↗</button>`:''}</li>`;
+    }).join('')}</ol>
     <p class="small" style="margin-top:12px">Checks are temporary and reset when you reopen this room.</p>
     <h3>Field notes</h3><ul class="note-list">${room.notes.map(note=>`<li>${escape(note)}</li>`).join('')}</ul>
     <h3>Wiki sources</h3><div class="sources">${room.sources.map(sourceLink).join('')}</div>
     <button class="text-button detail-guide">Key timing & map notes ↗</button>`;
   showPage('detail');
-  if (focusMap) centerOn(anchors[id]);
+  drawProjections(room);
+  if (focusMap) centerOn(anchors[id],diagrams[id]?190:260);
+  else setView(view);
 }
 function drawMarkers() {
   const grid = svgNode('g', {id:'grid-layer',class:'map-grid',display:'none'});
@@ -123,7 +163,7 @@ function drawMarkers() {
   map.append(places);
   const roomLayer = svgNode('g',{id:'room-layer'});
   rooms.forEach((room,index)=>{
-    const marker = svgNode('g', {class:'room-marker','data-anchor':anchors[room.id],'data-room':room.id,tabindex:0,role:'button','aria-label':`${room.name}: locked room and ${room.keySpawns.length} possible key spots`});
+    const marker = svgNode('g', {class:`room-marker${diagrams[room.id]?' has-projections':''}`,'data-anchor':anchors[room.id],'data-room':room.id,tabindex:0,role:'button','aria-label':`${room.name}: locked room and ${room.keySpawns.length} possible key spots`});
     const title=svgNode('title'); title.textContent=`${room.name} · ${room.key} · approximate area`;
     const num=svgNode('text',{class:'num',y:0}); num.textContent=index+1;
     const label=svgNode('text',{class:'label',y:-29}); label.textContent=room.name.toUpperCase();
@@ -133,12 +173,14 @@ function drawMarkers() {
     marker.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectRoom(room.id);}});
     roomLayer.append(marker);
   });
-  map.append(roomLayer);
+  roomLayer.append(svgNode('g',{id:'detail-layer'}));map.append(roomLayer);
   setView(view);
 }
 
 $('#search').addEventListener('input',roomList);
 $('#sidebar').addEventListener('click',event=>{
+  const point=event.target.closest('[data-point]');
+  if(point) focusProjection(rooms.find(room=>room.id===point.dataset.roomPoint),Number(point.dataset.point));
   const row=event.target.closest('[data-room]');
   if(row) selectRoom(row.dataset.room);
   if(event.target.closest('.back')) showOverview();
@@ -148,10 +190,16 @@ $('#show-guide').addEventListener('click',showGuide);
 $('#map-notes').addEventListener('click',showGuide);
 $('#landmarks').addEventListener('change',event=>$('#landmark-layer')?.setAttribute('display',event.target.checked?'inline':'none'));
 $('#grid').addEventListener('change',event=>$('#grid-layer')?.setAttribute('display',event.target.checked?'inline':'none'));
+$('#room-pins').addEventListener('change',event=>$('#room-layer')?.setAttribute('display',event.target.checked?'inline':'none'));
 const zoom = factor => setView(zoomView(view,factor,[view[0]+view[2]/2,view[1]+view[3]/2]));
 $('#zoom-in').addEventListener('click',()=>zoom(.75));
 $('#zoom-out').addEventListener('click',()=>zoom(1/.75));
 $('#reset').addEventListener('click',()=>{setView([...HOME]);$('#status').textContent='';});
+$('#native').addEventListener('click',()=>{
+  const bounds=map.getBoundingClientRect();
+  setView(nativeView(view,[bounds.width,bounds.height],basemap.width/basemap.mapWidth));
+  $('#status').textContent='1:1 detail · one original image pixel per CSS pixel';
+});
 map.addEventListener('wheel',event=>{
   event.preventDefault();
   if(!ready) return;
@@ -185,7 +233,7 @@ function beginGesture() {
   map.classList.add('dragging');
 }
 map.addEventListener('pointerdown',event=>{
-  if(!ready||event.button!==0||event.target.closest('.room-marker,.landmark-marker')) return;
+  if(!ready||event.button!==0||event.target.closest('.room-marker,.landmark-marker,.detail-marker')) return;
   pointers.set(event.pointerId,[event.clientX,event.clientY]);
   map.setPointerCapture(event.pointerId);
   beginGesture();
@@ -208,28 +256,39 @@ map.addEventListener('pointermove',event=>{
 });
 for(const type of ['pointerup','pointercancel','lostpointercapture']) map.addEventListener(type,event=>{if(pointers.delete(event.pointerId)) beginGesture();});
 
-$('#export').addEventListener('click',()=>{
+$('#export').addEventListener('click',async()=>{
+  $('#export').disabled=true;
+  try {
   const clone=map.cloneNode(true);
   clone.setAttribute('viewBox',HOME.join(' '));clone.setAttribute('width',HOME[2]);clone.setAttribute('height',HOME[3]);
   clone.querySelectorAll('[data-anchor]').forEach(marker=>{const [x,y]=marker.dataset.anchor.split(',');marker.setAttribute('transform',`translate(${x} ${y})`);marker.style.opacity='1';marker.classList.remove('selected');});
-  const title=svgNode('title');title.textContent='Ronograd Field Atlas · five locked room compounds · Wiki research 2026-11-02';clone.prepend(title);
-  const metadata=svgNode('metadata');metadata.textContent=JSON.stringify({checked:'2026-11-02',precision:'Approximate compound anchors; no surveyed door or key coordinates.',sources:[`${wiki}Map:Operation_Phoenix_-_Ronograd_Island`,`${wiki}File:Ronograd_Island_map.png`,...rooms.map(room=>room.sources[0])],credit:'Gravity_Defier, AGuyNamedMinh and BRM5 Wiki contributors; vector adaptation',license:'https://creativecommons.org/licenses/by-sa/3.0/'});clone.append(metadata);
-  const credit=svgNode('text',{x:10,y:1526,fill:'#b4c1ba','font-size':10});credit.textContent='BRM5 Wiki / Gravity_Defier / AGuyNamedMinh · Adapted vector map · CC BY-SA 3.0 · Approximate area pins';clone.append(credit);
+  const imageData=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(basemapBlob);});
+  clone.querySelector('#terrain-reference').setAttribute('href',imageData);
+  const title=svgNode('title');title.textContent='Ronograd Field Atlas · original Wiki imagery with vector markers · Wiki research 2026-11-02';clone.prepend(title);
+  const metadata=svgNode('metadata');metadata.textContent=JSON.stringify({checked:'2026-11-02',precision:'Original raster pixels preserved; compound anchors approximate. Door/key projections only as supported by the linked Wiki diagrams.',sources:[basemap.source,`${wiki}Map:Operation_Phoenix_-_Ronograd_Island`,...rooms.map(room=>room.sources[0])],credit:'Gravity_Defier, AGuyNamedMinh and BRM5 Wiki contributors; original imagery with vector overlay',license:'https://creativecommons.org/licenses/by-sa/3.0/'});clone.append(metadata);
+  const credit=svgNode('text',{x:10,y:1526,fill:'#b4c1ba','font-size':10});credit.textContent='BRM5 Wiki / Gravity_Defier · Original imagery + vector markers · CC BY-SA 3.0 · Approximate area pins';clone.append(credit);
   const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml;charset=utf-8'}));
   const a=document.createElement('a');a.href=url;a.download='ronograd-field-atlas.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  } catch(error) {
+    $('#status').textContent='Map export failed. Please try again.';
+    console.error(error);
+  } finally {$('#export').disabled=false;}
 });
 
 async function load() {
   try {
-    const responses=await Promise.all([fetch('./rooms.json'),fetch('./terrain.svg')]);
+    const responses=await Promise.all([fetch('./rooms.json'),fetch(`./${basemap.file}`)]);
     if(responses.some(response=>!response.ok)) throw new Error('Map files could not be loaded.');
     rooms=await responses[0].json();
-    const documentSvg=new DOMParser().parseFromString(await responses[1].text(),'image/svg+xml');
-    if(documentSvg.querySelector('parsererror')) throw new Error('Vector map is invalid.');
+    basemapBlob=await responses[1].blob();
     const style=svgNode('style');style.textContent=mapStyle;map.append(style);
-    for(const child of [...documentSvg.documentElement.children]) map.append(document.importNode(child,true));
+    map.append(svgNode('rect',{width:basemap.mapWidth,height:basemap.mapWidth*basemap.height/basemap.width,fill:'#101e26'}));
+    const image=svgNode('image',{id:'terrain-reference',href:URL.createObjectURL(basemapBlob),x:0,y:0,width:basemap.mapWidth,height:basemap.mapWidth*basemap.height/basemap.width,preserveAspectRatio:'xMinYMin meet'});
+    const imageReady=new Promise((resolve,reject)=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',()=>reject(new Error('Original map image could not be decoded.')),{once:true});});
+    map.append(image);
+    await imageReady;
     drawMarkers();roomList();
-    $('#guide-links').innerHTML=[`${wiki}Locked_Room`,...rooms.map(room=>room.sources[0]),`${wiki}Items_(Ronograd)`,`${wiki}Map:Operation_Phoenix_-_Ronograd_Island`,`${wiki}File:Ronograd_Island_map.png`].map(sourceLink).join('');
+    $('#guide-links').innerHTML=[`${wiki}Locked_Room`,...rooms.map(room=>room.sources[0]),...Object.values(diagrams).map(diagram=>diagram.source),...Object.values(roomPhotos).map(photo=>photo.source),`${wiki}Items_(Ronograd)`,`${wiki}Map:Operation_Phoenix_-_Ronograd_Island`,`${wiki}File:Ronograd_Island_map.png`].map(sourceLink).join('');
     ready=true;$('#export').disabled=false;$('#status').textContent='';
   } catch(error) {
     $('#status').textContent='Could not load map data. Reload the page or serve this folder over HTTP.';
