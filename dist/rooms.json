@@ -1,0 +1,137 @@
+[
+  {
+    "id": "kozlovka",
+    "name": "Kozlovka",
+    "location": "Main apartment building, on the VIP room's floor; follow the corridor towards the rubble.",
+    "key": "Apartment Key",
+    "keySpawns": [
+      "Entrance house, floor 1: white folding table beside the living-room monitor in the two-storey house on the right.",
+      "VIP apartment, floor 4: white folding table in the living room.",
+      "VIP apartment, floor 4: kitchen counter adjoining the living room.",
+      "Apartment below the VIP: wooden living-room table. The wiki labels this floor 1; its relative-floor description needs checking.",
+      "Three-storey building east of the main block, floor 3: white folding table in the accessible apartment's living room.",
+      "Same eastern building, floor 3: bed at the far end of the apartment."
+    ],
+    "loot": [
+      { "item": "Cash Bag", "quantity": "2" },
+      { "item": "Equipment Case", "quantity": "3" },
+      { "item": "Supply box: ammunition, magazines and grenades", "quantity": "3" },
+      { "item": "Backpack", "quantity": "Sometimes, in the supply boxes" }
+    ],
+    "notes": [
+      "The wiki lists six possible key spots; older walkthroughs omit the kitchen counter.",
+      "One spawn is described as both floor 1 and directly below the floor-4 VIP apartment. Treat this floor label as unresolved.",
+      "These are possible spawn locations, not six simultaneous keys.",
+      "Compound marker only: precise door and key coordinates have not been surveyed in game."
+    ],
+    "sources": [
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Kozlovka#Locked_Room",
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Items_(Ronograd)"
+    ]
+  },
+  {
+    "id": "naval",
+    "name": "Naval Base",
+    "location": "Secure room in the main office building, identifiable by its steel-mesh security door. The current wiki leaves its exact floor unspecified.",
+    "key": "Secure Room Key",
+    "keySpawns": [
+      "VIP room: table beside the guitar.",
+      "Room adjoining the VIP room: large table.",
+      "Rooftop near floor 3: radio on a table."
+    ],
+    "loot": [
+      { "item": "Cash Bag", "quantity": "1–3" },
+      { "item": "Equipment Case", "quantity": "1–3" },
+      { "item": "Metals Case", "quantity": "2–4" }
+    ],
+    "notes": [
+      "The location article still has an unfinished room-location sentence. Floor 2 is not established by the current wiki text.",
+      "This article describes day/night key relocation, conflicting with the general Locked Room page. No fixed rotation timer is asserted here.",
+      "Compound marker only: precise door and key coordinates have not been surveyed in game."
+    ],
+    "sources": [
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Naval_Base#Locked_Room",
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Items_(Ronograd)",
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Locked_Room"
+    ]
+  },
+  {
+    "id": "quarry",
+    "name": "Quarry",
+    "location": "Underground gated room built from stone brick, opposite the entrance to the stone-brick bunker containing the VIP area.",
+    "key": "Gate Key",
+    "keySpawns": [
+      "VIP safe room: wooden chair beside two white folding tables displaying a Ronograd Island map.",
+      "Deepest underground level: white folding table close to the elevator."
+    ],
+    "loot": [
+      { "item": "Cash Bag", "quantity": "0–2" },
+      { "item": "Metals Case", "quantity": "2–4" },
+      { "item": "Supply box: ammunition, magazines and grenades", "quantity": "3" }
+    ],
+    "notes": [
+      "The Quarry article and Locked Room overview state that its key appears only after every compound objective is complete.",
+      "This requirement is a wiki claim, not a result from an in-game test in this project.",
+      "Compound marker only: the room and both key spots are underground; their surface coordinates have not been surveyed."
+    ],
+    "sources": [
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Quarry#Locked_Room",
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Items_(Ronograd)",
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Locked_Room"
+    ]
+  },
+  {
+    "id": "ronograd",
+    "name": "Ronograd City",
+    "location": "Floor 2 of the southeast VIP apartment building; look for the distinctive locked-room door.",
+    "key": "Apartment Key",
+    "keySpawns": [
+      "Long white table between the two eastern VIP apartment buildings.",
+      "Beside the radio beneath the central tent closest to the northwest VIP building.",
+      "White table beneath camouflage netting on the southern edge of the central area.",
+      "White table inside the northwest VIP room."
+    ],
+    "loot": [
+      { "item": "Cash Bag", "quantity": "0–2" },
+      { "item": "Equipment Case", "quantity": "1–2" },
+      { "item": "Metals Case", "quantity": "0–2" },
+      { "item": "Supply box: ammunition, magazines and grenades", "quantity": "4" }
+    ],
+    "notes": [
+      "The newer locked-room section lists four key spots; an earlier paragraph on the same page mentions only two.",
+      "This article describes day/night key relocation and occasional daytime respawns after leaving the compound. This conflicts with the general Locked Room page.",
+      "Compound marker only: precise door and key coordinates have not been surveyed in game."
+    ],
+    "sources": [
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Ronograd_City#Locked_Room",
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Items_(Ronograd)",
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Locked_Room"
+    ]
+  },
+  {
+    "id": "sochraina",
+    "name": "Sochraina City",
+    "location": "Floor 2, near the stairs, in the apartment building with the PKP turret.",
+    "key": "Apartment Key",
+    "keySpawns": [
+      "Market plaza: box beside the large green cabbage-selling tent.",
+      "VIP apartment, floor 4: kitchen table in the living room, close to the apartment entrance.",
+      "Waterfront: sea-facing white folding table under a green camouflage tent."
+    ],
+    "loot": [
+      { "item": "Cash Bag", "quantity": "0–3" },
+      { "item": "Equipment Case", "quantity": "0–3" },
+      { "item": "Jerry Can", "quantity": "0–5" },
+      { "item": "Supply box: ammunition, magazines and grenades", "quantity": "2" }
+    ],
+    "notes": [
+      "Use the current compound name Sochraina City. Some unrelated search results incorrectly call it Sahrani.",
+      "These are alternative spawn positions; the wiki describes a randomized choice.",
+      "Compound marker only: precise door and key coordinates have not been surveyed in game."
+    ],
+    "sources": [
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Sochraina_City#Locked_Room",
+      "https://roblox-blackhawk-rescue-mission-5.fandom.com/wiki/Items_(Ronograd)"
+    ]
+  }
+]

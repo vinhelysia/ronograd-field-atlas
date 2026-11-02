@@ -1,0 +1,1 @@
+{"name":"ronograd-field-atlas","private":true,"type":"module","scripts":{"test":"node scripts/check.mjs"}}
